@@ -1,3 +1,8 @@
+from os.path import join, basename, splitext
+from phypno import Dataset
+from phypno.attr import Chan
+
+
 def fix_chan_name(subj_code, elec_file):
     """Match channel names between elec loc and datasets
 
