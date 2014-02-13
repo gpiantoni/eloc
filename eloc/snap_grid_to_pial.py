@@ -143,3 +143,45 @@ def snap_to_surf(chan, chan_name, surf_file):
 
     adjusted_chan = Chan(all_chan, xyz)
     return adjusted_chan
+
+
+def adjust_grid_strip_chan(chan, freesurfer):
+    """Adjust only grid and strip channels.
+
+    Parameters
+    ----------
+    chan : instance of phypno.attr.chan.Chan
+        channels to snap, with or without grid
+    freesurfer : instance of phypno.attr.anat.Freesurfer
+        freesurfer information
+
+    Returns
+    -------
+    instance of phypno.attr.chan.Chan
+        channels where grid and strip have been snapped to surface.
+
+    """
+    grid_strip_chan = []
+    depth_chan = []
+    for one_chan in chan.chan_name:
+        if 'gr' in one_chan.lower() or one_chan[2].lower() == 's':
+            grid_strip_chan.append(one_chan)
+        else:
+            depth_chan.append(one_chan)
+
+    if grid_strip_chan:
+        hemi = []
+        grid_xyz = chan.return_chan_xyz(grid_strip_chan)
+        if sum(grid_xyz[:, 0] > 0) > 10:
+            hemi = 'rh'
+        elif sum(grid_xyz[:, 0] < 0) > 10:
+            hemi = 'lh'
+
+        pial_surf = freesurfer.read_surf(hemi, 'pial')
+        outer_pial_file = create_outer_surf(pial_surf.surf_file)
+        ad_chan = snap_to_surf(chan, grid_strip_chan, outer_pial_file)
+
+    else:
+        ad_chan = chan
+
+    return ad_chan

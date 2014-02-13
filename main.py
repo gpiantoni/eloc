@@ -1,20 +1,38 @@
+from os.path import join, listdir
+from sys import path
+path.append('/home/gio/projects/rcmg/scripts')
+path.append('/home/gio/projects/eloc/scripts')
 
-from phypno.attr import Chan, Surf
+from phypno.attr import Chan, Surf, Freesurfer
 from phypno.viz.plot_3d import plot_surf, plot_chan
 
+from rcmg.interfaces import make_struct
 from eloc.snap_grid_to_pial import create_outer_surf, snap_to_surf
 
 
-subj_code = 'MG51'
-pial_surf = '/home/gio/recordings/' + subj_code + '/mri/proc/freesurfer/surf/lh.pial'
-elec_file = '/home/gio/recordings/' + subj_code + '/doc/elec_pos.csv'
+recdir = '/home/gio/recordings'
 
-outer_pial_file = create_outer_surf(pial_surf)
+# for subj in listdir(recdir):
+
+subj = 'MG69'
+dir_names = make_struct(subj, redo=False)
+elec_file = join(dir_names['doc_elec'], 'elec_pos.csv')
 chan = Chan(elec_file)
 
-ad_chan = snap_to_surf(chan, chan.chan_name[:96], outer_pial_file)
+anat = Freesurfer(join(dir_names['mri_proc'], 'freesurfer'))
 
-surf = Surf(pial_surf)
+
+
+
+
+
 
 plot_surf(surf)
 plot_chan(chan)
+
+
+"""
+    fixed_elec_file = fix_chan_name(subj, elec_file)
+    for eeg_file in eeg_files:
+        check_chan_name(eeg_file, fixed_elec_file, dir_names['doc'])
+"""
