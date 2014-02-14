@@ -15,9 +15,11 @@ HEMI_TOL = 5  # tolerance for electrodes in one or the other hemisphere
 def _plot_grid_and_depth_elec(hemi_chan):
 
     grid_strip_chan = hemi_chan(is_grid)
+    neuroport = hemi_chan(lambda x: x.label == 'neuroport')
     depth_chan = hemi_chan(lambda x: not is_grid(x))
 
-    fig = plot_chan(grid_strip_chan, color=(1, 0, 0, 1))
+    fig = plot_chan(neuroport, color=(0, 1, 0, 1))
+    plot_chan(grid_strip_chan, fig, color=(1, 0, 0, 1))
     plot_chan(depth_chan, fig, color=(0, 0, 1, 1))
 
     return fig

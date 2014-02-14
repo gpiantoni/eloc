@@ -1,13 +1,15 @@
+from datetime import datetime
 from getpass import getuser
+from logging import getLogger
 from numpy import savetxt, loadtxt
 from os import remove
 from os.path import join, basename, splitext
+from re import match
 from socket import gethostname
 from subprocess import call, PIPE
 from tempfile import mktemp
 
-from phypno.attr import Chan
-
+lg = getLogger(__name__)
 
 MATLAB_PC = 'gp902@rgs03.research.partners.org'
 TMP_DATA = 'projects/elecloc/data'
@@ -18,6 +20,17 @@ USER = getuser()
 HOST = gethostname()
 
 REMOVE_FILES = True  # keep all the temporary files
+
+
+def is_grid(chan):
+    label = chan.label
+    G1 = match('.*G[0-9]{1,2}$', label)
+    GR1 = match('.*GR[0-9]{1,2}$', label.upper())
+    RG1 = match('.*RG[0-9]{1,2}$', label.upper())  # typo for gr
+    S1 = match('.*S[0-9]$', label.upper())
+    ref = match('REF[0-9]$', label.upper())
+    neuroport = label == 'neuroport'
+    return G1 or GR1 or RG1 or S1 or ref or neuroport
 
 
 def _exec_remote_script(local_script):
@@ -40,9 +53,11 @@ def _exec_remote_script(local_script):
             f.write('rm ' + remote_script +
                     '\n')  # this message will self-destruct
 
+    lg.debug('exec_remote: scp')
     call('scp ' + local_script + ' ' + MATLAB_PC + ':' + TMP_DATA, shell=True)
     call('ssh ' + MATLAB_PC + ' "chmod u+x ' + remote_script + '"',
          shell=True)
+    lg.debug('exec_remote: run script')
     call('ssh ' + MATLAB_PC + ' "./' + remote_script + '"',
          shell=True, stdout=PIPE)
     remove(local_script)
@@ -62,6 +77,7 @@ def create_outer_surf(surf_file):
         file with the outer surface
 
     """
+    lg.debug('copy surf file to remote')
     call('scp ' + surf_file + ' ' + MATLAB_PC + ':' + TMP_DATA, shell=True)
 
     surf_name = basename(surf_file)
@@ -70,7 +86,7 @@ def create_outer_surf(surf_file):
     outer_surf = join(TMP_DATA, surf_name + '-outer')  # make_outer_surface
     smooth_outer_surf = outer_surf + '-smoothed'  # mris_smooth
 
-    script_file = '/home/gio/script.sh'
+    script_file = mktemp('.sh')
     with open(script_file, 'w') as f:
         f.write('mris_fill -c -r 1 ' + remote_surf + ' ' +
                 remote_filled + '\n')
@@ -84,19 +100,19 @@ def create_outer_surf(surf_file):
         f.write('mris_smooth -nw -n 60 ' + outer_surf +
                 ' ' + smooth_outer_surf + '\n')
 
+    lg.info('make outer surface: start')
     _exec_remote_script(script_file)
+    lg.info('make outer surface: done')
     return smooth_outer_surf
 
 
-def snap_to_surf(chan, chan_name, surf_file):
+def snap_to_surf(chan, surf_file):
     """Use remote script in Matlab to snap electrodes to grid.
 
     Parameters
     ----------
     chan : instance of phypno.attr.chan.Chan
         instance of channels to snap to outer pial
-    chan_name : list of str
-        list of channels to snap to the grid
     surf_file : path to file
         this surface should usually be the smoothed outer pial surface.
 
@@ -106,13 +122,18 @@ def snap_to_surf(chan, chan_name, surf_file):
         where the subset of channels have been snapped to the surface.
 
     """
-    xyz = chan.return_chan_xyz(chan_name)
+    xyz = chan.return_xyz()
 
     chan_file = mktemp('.csv')
     savetxt(chan_file, xyz, delimiter=",")
 
     remote_chan_file = join(TMP_DATA, basename(chan_file))
     snapped_remote_chan_file = splitext(remote_chan_file)[0] + '-snapped.csv'
+    str_now = datetime.now().strftime('%Y_%m_%d_%H_%M_%S')
+    remote_matlab_log = join(TMP_DATA, 'matlab_log' + str_now + '.txt')
+    local_matlab_log = join('/home/gio', 'matlab_log' + str_now + '.txt')
+
+    lg.debug('copy chan file ({}) to remote'.format(chan_file))
     call('scp ' + chan_file + ' ' + MATLAB_PC + ':' + TMP_DATA, shell=True)
     remove(chan_file)
 
@@ -121,28 +142,27 @@ def snap_to_surf(chan, chan_name, surf_file):
         f.write('matlab -nodesktop -nojvm -nosplash -r ' +
                 '"addpath(\'' + SNAP_MATLAB_PATH + '\'); ' +
                 'snap_to_outerpial(\'' + surf_file + '\', \'' +
-                remote_chan_file + '\'); exit"\n')
+                remote_chan_file + '\'); exit" > ' +
+                remote_matlab_log + '\n')
 
         f.write('scp ' + snapped_remote_chan_file + ' ' +
                 USER + '@' + HOST + ':' + chan_file + '\n')
+        f.write('scp ' + remote_matlab_log + ' ' +
+                USER + '@' + HOST + ':' + local_matlab_log + '\n')
 
         if REMOVE_FILES:
             f.write('rm ' + join(TMP_DATA, '*') + '\n')
 
+    lg.info('snap to surface: start')
     _exec_remote_script(script_file)
+    lg.info('snap to surface: done')
 
     adjusted_xyz = loadtxt(chan_file, delimiter=',')
-    all_chan = chan.chan_name
-    xyz = chan.xyz
-    for idx_xyz, one_chan in enumerate(all_chan):
-        try:
-            idx = chan_name.index(one_chan)
-            xyz[idx_xyz, :] = adjusted_xyz[idx, :]
-        except ValueError:
-            pass
 
-    adjusted_chan = Chan(all_chan, xyz)
-    return adjusted_chan
+    for idx_xyz, one_chan in enumerate(chan.chan):
+        one_chan.xyz = adjusted_xyz[idx_xyz, :]
+
+    return chan
 
 
 def adjust_grid_strip_chan(chan, freesurfer):
@@ -150,38 +170,47 @@ def adjust_grid_strip_chan(chan, freesurfer):
 
     Parameters
     ----------
-    chan : instance of phypno.attr.chan.Chan
+    chan : instance of phypno.attr.chan.Channels
         channels to snap, with or without grid
     freesurfer : instance of phypno.attr.anat.Freesurfer
         freesurfer information
 
     Returns
     -------
-    instance of phypno.attr.chan.Chan
+    instance of phypno.attr.chan.Channels
         channels where grid and strip have been snapped to surface.
 
-    """
-    grid_strip_chan = []
-    depth_chan = []
-    for one_chan in chan.chan_name:
-        if 'gr' in one_chan.lower() or one_chan[2].lower() == 's':
-            grid_strip_chan.append(one_chan)
-        else:
-            depth_chan.append(one_chan)
+    Notes
+    -----
+    This works in a tricky way. It only passes the instance of Channels that
+    contains instance of Chan which are of interest. However the instances of
+    Chan are the same instances (same objects) of the main instance of
+    Channels, the full one. That's why we don't need to specify an assignment
+    explicitly.
 
-    if grid_strip_chan:
-        hemi = []
-        grid_xyz = chan.return_chan_xyz(grid_strip_chan)
-        if sum(grid_xyz[:, 0] > 0) > 10:
+    """
+    grid_strip_chan = chan(is_grid)
+    depth_chan = chan(lambda x: not is_grid(x))
+
+    lg.info('grid/strip chan: ' + ','.join(grid_strip_chan.return_label()))
+    lg.info('depth chan: ' + ','.join(depth_chan.return_label()))
+
+    if grid_strip_chan.n_chan() > 0:
+
+        grid_xyz = grid_strip_chan.return_xyz()
+        grid_in_rh = sum(grid_xyz[:, 0] > 0) > 10
+        grid_in_lh = sum(grid_xyz[:, 0] < 0) > 10
+        if grid_in_rh and grid_in_lh:
+            raise ValueError('Grid is on both sides, check this subject.')
+        elif grid_in_rh:
             hemi = 'rh'
-        elif sum(grid_xyz[:, 0] < 0) > 10:
+        elif grid_in_lh:
             hemi = 'lh'
+        else:
+            raise ValueError('Not enough electrodes on either side.')
 
         pial_surf = freesurfer.read_surf(hemi, 'pial')
         outer_pial_file = create_outer_surf(pial_surf.surf_file)
-        ad_chan = snap_to_surf(chan, grid_strip_chan, outer_pial_file)
-
-    else:
-        ad_chan = chan
+        snap_to_surf(grid_strip_chan, outer_pial_file)
 
     return ad_chan
