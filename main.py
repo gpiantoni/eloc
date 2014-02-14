@@ -1,34 +1,33 @@
-from os.path import join, listdir
+from logging import getLogger, DEBUG, INFO
+from os import listdir
+from os.path import join
 from sys import path
 path.append('/home/gio/projects/rcmg/scripts')
 path.append('/home/gio/projects/eloc/scripts')
 
-from phypno.attr import Chan, Surf, Freesurfer
-from phypno.viz.plot_3d import plot_surf, plot_chan
+from phypno.attr import Channels, Freesurfer
+
 
 from rcmg.interfaces import make_struct
-from eloc.snap_grid_to_pial import create_outer_surf, snap_to_surf
+from eloc.snap_grid_to_pial import adjust_grid_strip_chan
 
+lg = getLogger('eloc')
+lg.setLevel(INFO)
 
 recdir = '/home/gio/recordings'
 
-# for subj in listdir(recdir):
+for subj in sorted(listdir(recdir)):
+    lg.info('\n' + subj)
 
-subj = 'MG69'
-dir_names = make_struct(subj, redo=False)
-elec_file = join(dir_names['doc_elec'], 'elec_pos.csv')
-chan = Chan(elec_file)
+    dir_names = make_struct(subj, redo=False)
+    elec_file = join(dir_names['doc_elec'], 'elec_pos.csv')
+    adj_elec_file = join(dir_names['doc_elec'], 'elec_pos_adjusted.csv')
 
-anat = Freesurfer(join(dir_names['mri_proc'], 'freesurfer'))
+    chan = Channels(elec_file)
+    anat = Freesurfer(join(dir_names['mri_proc'], 'freesurfer'))
 
-
-
-
-
-
-
-plot_surf(surf)
-plot_chan(chan)
+    adjust_grid_strip_chan(chan, anat)
+    chan.export(adj_elec_file)
 
 
 """
