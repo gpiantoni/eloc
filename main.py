@@ -12,25 +12,32 @@ from eloc.snap_grid_to_pial import adjust_grid_strip_chan
 from eloc.elec_info import plot_rotating_brains, make_table_of_regions
 
 lg = getLogger('eloc')
-lg.setLevel(INFO)
+lg.setLevel(DEBUG)
 
 recdir = '/home/gio/recordings'
 
-for subj in sorted(listdir(recdir)):
+for subj in ['MG{0:02}'.format(x) for x in range(14, 73)]:
+
     lg.info('\n' + subj)
 
     dir_names = make_struct(subj, redo=False)
     elec_file = join(dir_names['doc_elec'], 'elec_pos.csv')
     adj_elec_file = join(dir_names['doc_elec'], 'elec_pos_adjusted.csv')
 
-    chan = Channels(elec_file)
-    anat = Freesurfer(join(dir_names['mri_proc'], 'freesurfer'))
+    try:
+        chan = Channels(elec_file)
+        anat = Freesurfer(join(dir_names['mri_proc'], 'freesurfer'))
+    except:
+        continue
 
     adjust_grid_strip_chan(chan, anat)
     chan.export(adj_elec_file)
 
     gif_file = join(dir_names['doc_wiki'], 'elec_pos.gif')
-    plot_rotating_brains(chan, anat, gif_file)
+    try:
+        plot_rotating_brains(chan, anat, gif_file)
+    except FileNotFoundError:
+        continue
 
     wiki_file = join(dir_names['doc_wiki'], 'elec_pos_table.txt')
     make_table_of_regions(chan, anat, wiki_file)

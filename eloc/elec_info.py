@@ -1,3 +1,4 @@
+from numpy import mean
 from os.path import join, splitext
 from subprocess import call
 from tempfile import mkdtemp
@@ -45,15 +46,14 @@ def plot_rotating_brains(chan, anat, gif_file):
 
     for hemi, one_hemi_chan in hemi_chan.items():
         fig = _plot_grid_and_depth_elec(one_hemi_chan)
-        plot_surf(anat.read_surf(hemi), fig)
+        surf = anat.read_surf(hemi)
+        plot_surf(surf, fig)
 
         ax = gca()
         ax.camera.elevation = 10
         ax.camera.zoom = 0.007
-        if hemi == 'lh':
-            ax.camera.loc = (-30, -20, 0)
-        if hemi == 'rh':
-            ax.camera.loc = (30, -20, 0)
+        ax.camera.loc = tuple(mean(surf.vert, axis=0))
+
         rec = record(ax)
         for i in range(N_ANGLES):
             ax.camera.azimuth = 360 * i / N_ANGLES
@@ -87,7 +87,7 @@ def make_table_of_regions(chan, anat, wiki_table):
 
     """
     assign_region_to_channels(chan, anat)
-    neuroport = chan(lambda x: x.label == 'neuroport')
+    neuroport = chan(lambda x: x.label.lower() == 'neuroport')
     depth_chan = chan(lambda x: not is_grid(x))
 
     with open(wiki_table, 'w') as f:

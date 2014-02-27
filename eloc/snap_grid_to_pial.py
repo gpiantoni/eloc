@@ -25,12 +25,13 @@ REMOVE_FILES = True  # keep all the temporary files
 def is_grid(chan):
     label = chan.label
     G1 = match('.*G[0-9]{1,2}$', label)
+    CING1 = match('CING[0-9]$', label)
     GR1 = match('.*GR[0-9]{1,2}$', label.upper())
     RG1 = match('.*RG[0-9]{1,2}$', label.upper())  # typo for gr
     S1 = match('.*S[0-9]$', label.upper())
     ref = match('REF[0-9]$', label.upper())
-    neuroport = label == 'neuroport'
-    return G1 or GR1 or RG1 or S1 or ref or neuroport
+    neuroport = label in ('neuroport', 'Neuroport')
+    return (G1 and not CING1) or GR1 or RG1 or S1 or ref or neuroport
 
 
 def _exec_remote_script(local_script):
@@ -212,5 +213,3 @@ def adjust_grid_strip_chan(chan, freesurfer):
         pial_surf = freesurfer.read_surf(hemi, 'pial')
         outer_pial_file = create_outer_surf(pial_surf.surf_file)
         snap_to_surf(grid_strip_chan, outer_pial_file)
-
-    return ad_chan
