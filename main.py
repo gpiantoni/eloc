@@ -16,7 +16,7 @@ lg.setLevel(DEBUG)
 
 recdir = '/home/gio/recordings'
 
-for subj in ['MG{0:02}'.format(x) for x in range(14, 73)]:
+for subj in ['MG{0:02}'.format(x) for x in range(14, 74)]:
 
     lg.info('\n' + subj)
 
