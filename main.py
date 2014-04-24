@@ -10,13 +10,17 @@ from phypno.attr import Channels, Freesurfer
 from rcmg.interfaces import make_struct
 from eloc.snap_grid_to_pial import adjust_grid_strip_chan
 from eloc.elec_info import plot_rotating_brains, make_table_of_regions
+from eloc.fix_chan_name import fix_chan_name
 
 lg = getLogger('eloc')
 lg.setLevel(DEBUG)
 
 recdir = '/home/gio/recordings'
 
-for subj in ['MG{0:02}'.format(x) for x in range(14, 74)]:
+subj_with_correct_names = ['EM09']
+
+
+for subj in listdir(recdir):
 
     lg.info('\n' + subj)
 
@@ -42,10 +46,11 @@ for subj in ['MG{0:02}'.format(x) for x in range(14, 74)]:
     wiki_file = join(dir_names['doc_wiki'], 'elec_pos_table.txt')
     make_table_of_regions(chan, anat, wiki_file)
 
-
+    if subj in subj_with_correct_names:
+        fixed_elec_file = fix_chan_name(subj, elec_file)
 
 """
-    fixed_elec_file = fix_chan_name(subj, elec_file)
+
     for eeg_file in eeg_files:
         check_chan_name(eeg_file, fixed_elec_file, dir_names['doc'])
 """

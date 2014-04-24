@@ -1,8 +1,6 @@
 from os.path import join, basename, splitext
 from phypno import Dataset
-from phypno.attr import Chan
-
-print('this module needs to be redone!!!!')
+from phypno.attr import Channels
 
 
 def fix_chan_name(subj_code, elec_file):
@@ -15,11 +13,16 @@ def fix_chan_name(subj_code, elec_file):
     It's very subject-specific, I don't want to over-generalize.
 
     """
-    fixed_elec_file = splitext(elec_file)[0] + '_fixed.csv'
-    chan = Chan(elec_file)
+    fixed_elec_file = splitext(elec_file)[0] + '_renamed.csv'
+    chan = Channels(elec_file)
 
     oldname = []
     newname = []
+
+    if subj_code == 'EM09':
+        oldname.extend(['fgr{}'.format(x) for x in range(1, 17)])
+        newname.extend(['FGR{}'.format(x) for x in range(1, 17)])
+        # not all
 
     if subj_code == 'MG59':
         oldname.extend(['RPT{}'.format(x) for x in range(1, 65)])
@@ -138,14 +141,19 @@ def fix_chan_name(subj_code, elec_file):
         oldname.append('LPT4 ')  # space
         newname.append('LPT4')
 
-    for old1, new1 in zip(oldname, newname):
-        chan.chan_name = [new1 if ch == old1 else ch for ch in chan.chan_name]
+    for one_oldname, one_newname in zip(oldname, newname):
+        for one_chan in chan.chan:
+            if one_chan.label == one_oldname:
+                one_chan.label = one_newname
 
     chan.export(fixed_elec_file)
     return fixed_elec_file
 
 
 def check_chan_name(eeg_file, elec_file, dest_dir):
+
+    raise DeprecationWarning('this module needs to be redone!!!!')
+
     d = Dataset(eeg_file)
     ch = Chan(elec_file)
     report_file = join(dest_dir, basename(eeg_file) + '_chan_report.txt')
