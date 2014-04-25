@@ -20,7 +20,20 @@ def fix_chan_name(subj_code, elec_file):
     newname = []
 
     if subj_code == 'EM09':
-        oldname.extend(['fgr{}'.format(x) for x in range(1, 17)])
+        oldname.extend(['fgr{}'.format(x + 1) for x in range(16)])
+        newname.extend(['FGR{}'.format(x + 1) for x in range(16)])
+        # not all
+
+    if subj_code == 'MG63':
+        oldname.extend(['GR{}'.format(x + 1) for x in range(64)])
+        newname.extend(['AGR{}'.format(x + 1) for x in range(64)])
+        oldname.extend(['gr{}'.format(x + 1) for x in range(32)])
+        newname.extend(['PGR{}'.format(x + 1) for x in range(32)])
+        # not all
+
+
+    if subj_code == 'MG72':
+        oldname.extend(['stGR{}'.format(x) for x in range(1, 17)])
         newname.extend(['FGR{}'.format(x) for x in range(1, 17)])
         # not all
 

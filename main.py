@@ -18,7 +18,7 @@ lg.setLevel(DEBUG)
 
 recdir = '/home/gio/recordings'
 
-subj_with_correct_names = ['EM09']
+subj_with_correct_names = ['EM09', 'MG63', 'MG72']
 
 
 for subj in listdir(recdir):
@@ -51,7 +51,7 @@ for subj in listdir(recdir):
     make_table_of_regions(chan, anat, wiki_file)
 
     if subj in subj_with_correct_names:
-        fixed_elec_file = fix_chan_name(subj, elec_file)
+        fixed_elec_file = fix_chan_name(subj, adj_elec_file)
 
 """
 
