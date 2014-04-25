@@ -9,7 +9,8 @@ from phypno.attr import Channels, Freesurfer
 
 from rcmg.interfaces import make_struct
 from eloc.snap_grid_to_pial import adjust_grid_strip_chan
-from eloc.elec_info import plot_rotating_brains, make_table_of_regions
+from eloc.elec_info import (plot_rotating_brains, make_table_of_regions,
+                            create_chan_MG37)
 from eloc.fix_chan_name import fix_chan_name
 
 lg = getLogger('eloc')
@@ -31,7 +32,10 @@ for subj in listdir(recdir):
     try:
         chan = Channels(elec_file)
         anat = Freesurfer(join(dir_names['mri_proc'], 'freesurfer'))
-    except:
+    except FileNotFoundError:
+        if subj == 'MG37':
+            chan = create_chan_MG37()
+            chan.export(adj_elec_file)
         continue
 
     adjust_grid_strip_chan(chan, anat)
@@ -54,3 +58,7 @@ for subj in listdir(recdir):
     for eeg_file in eeg_files:
         check_chan_name(eeg_file, fixed_elec_file, dir_names['doc'])
 """
+
+
+
+

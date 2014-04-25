@@ -1,9 +1,10 @@
-from numpy import mean
+from numpy import mean, meshgrid, arange, sqrt, zeros, vstack
 from os.path import join, splitext
 from subprocess import call
 from tempfile import mkdtemp
 from visvis import gca, record
 
+from phypno.attr import Channels
 from phypno.attr.chan import find_chan_in_region, assign_region_to_channels
 from phypno.viz.plot_3d import plot_surf, plot_chan
 
@@ -106,3 +107,34 @@ def make_table_of_regions(chan, anat, wiki_table):
             f.write('| {0} | {1} | {2} |\n'.format(one_chan.label,
                                                    one_chan.attr['approx'],
                                                    one_chan.attr['region']))
+
+def create_chan_MG37():
+    """Create channels for MG37. MG37 does not have electrode position. We
+    should get the correct electrode locations. Until then, we can use this
+    placeholder function.
+
+    """
+    n_chan = 16
+    a_labels = ['AGR' + str(i+1) for i in range(n_chan)]
+    a_xyz = _make_grid_MG37(n_chan, 4)
+
+    n_chan = 64
+    p_labels = ['PGR' + str(i+1) for i in range(n_chan)]
+    p_xyz = _make_grid_MG37(n_chan, 0)
+
+    labels = a_labels + p_labels
+    xyz = vstack((a_xyz, p_xyz))
+
+    return Channels(labels, xyz)
+
+
+def _make_grid_MG37(n_chan, start_point):
+    """start_point = 4 for AGR or 0 for PGR """
+    y_grid, z_grid = meshgrid(arange(sqrt(n_chan)),
+                              start_point - arange(sqrt(n_chan)))
+    xyz = zeros((n_chan, 3))
+    x = -1
+    for i, z, y in zip(arange(n_chan), y_grid.flatten(), z_grid.flatten(),):
+        xyz[i, :] = [x, y, z]
+
+    return xyz
