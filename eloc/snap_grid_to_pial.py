@@ -196,7 +196,7 @@ def adjust_grid_strip_chan(chan, freesurfer):
     lg.info('grid/strip chan: ' + ','.join(grid_strip_chan.return_label()))
     lg.info('depth chan: ' + ','.join(depth_chan.return_label()))
 
-    if grid_strip_chan.n_chan() > 0:
+    if grid_strip_chan.n_chan > 0:
 
         grid_xyz = grid_strip_chan.return_xyz()
         grid_in_rh = sum(grid_xyz[:, 0] > 0) > 10
