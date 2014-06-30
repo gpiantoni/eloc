@@ -1,9 +1,12 @@
-from os.path import join, basename, splitext
-from phypno import Dataset
+from csv import reader
+from itertools import zip_longest
+from os.path import splitext
+from statistics import mode
+
 from phypno.attr import Channels
 
 
-def fix_chan_name(subj_code, elec_file):
+def fix_chan_name(subj_code, elec_file, fixed_elec_file):
     """Match channel names between elec loc and datasets
 
     It happens that some names are typed differently between the EEG recordings
@@ -13,7 +16,6 @@ def fix_chan_name(subj_code, elec_file):
     It's very subject-specific, I don't want to over-generalize.
 
     """
-    fixed_elec_file = splitext(elec_file)[0] + '_renamed.csv'
     chan = Channels(elec_file)
 
     oldname = []
@@ -22,6 +24,13 @@ def fix_chan_name(subj_code, elec_file):
     if subj_code == 'EM09':
         oldname.extend(['fgr{}'.format(x + 1) for x in range(16)])
         newname.extend(['FGR{}'.format(x + 1) for x in range(16)])
+        # not all
+
+    if subj_code == 'MG33':
+        oldname.extend(['Gr{}'.format(x + 1) for x in range(64)])
+        newname.extend(['GR{}'.format(x + 1) for x in range(64)])
+        oldname.extend(['Ref{}'.format(x + 1) for x in range(4)])
+        newname.extend(['REF{}'.format(x + 1) for x in range(4)])
         # not all
 
     if subj_code == 'MG37':
@@ -37,7 +46,6 @@ def fix_chan_name(subj_code, elec_file):
         oldname.extend(['gr{}'.format(x + 1) for x in range(32)])
         newname.extend(['PGR{}'.format(x + 1) for x in range(32)])
         # not all
-
 
     if subj_code == 'MG72':
         oldname.extend(['stGR{}'.format(x) for x in range(1, 17)])
@@ -167,26 +175,71 @@ def fix_chan_name(subj_code, elec_file):
                 one_chan.label = one_newname
 
     chan.export(fixed_elec_file)
-    return fixed_elec_file
 
 
-def check_chan_name(eeg_file, elec_file, dest_dir):
+def get_mostcommon_chan_name(xltek_elec_name):
+    """Get the most common channels across xltek datasets.
 
-    raise DeprecationWarning('this module needs to be redone!!!!')
+    Parameters
+    ----------
+    xltek_elec_name : path to file
+        a cvs file, where each row contains the channel names
 
-    d = Dataset(eeg_file)
-    ch = Chan(elec_file)
-    report_file = join(dest_dir, basename(eeg_file) + '_chan_report.txt')
+    Returns
+    -------
+    list of str
+        list of channels based on the most common ones at each position.
+
+    Notes
+    -----
+    The motivation for this function is that sometimes the channel labels for
+    one dataset is not correct. However, across all the datasets, the most
+    common channel names are probably the right ones.
+
+    """
+    with open(xltek_elec_name, newline='', encoding='utf-8') as f:
+        csvinfo = reader(f)
+        all_chan = []
+        for row in csvinfo:
+            all_chan.append([chan.strip() for chan in row[1:]])
+
+    mode_chan = []
+    for same_chan in zip_longest(*all_chan):
+        mostcommon = mode(same_chan)
+        if mostcommon is not None:
+            mode_chan.append(mostcommon)
+
+    return mode_chan
+
+
+def check_chan_name(chan, xltek_chan_file):
+    """Compare the channel names with the location names.
+
+    Parameters
+    ----------
+    chan : instance of Channels
+        names of the channels
+    xltek_chan_file : path to str
+        return a report of the channels names
+
+    Notes
+    -----
+    It writes the report to file.
+
+    """
+    report_file = splitext(xltek_chan_file)[0] + '_report.txt'
+
+    pos_chan_name = chan.return_label()
+    xltek_chan_name = get_mostcommon_chan_name(xltek_chan_file)
 
     # everything stays upper-case
-    nogood = ['C{}'.format(x) for x in range(257)]  # empty channels
-    nogood.extend(['OSAT', 'PR'])  # I don't care about these channels
+    nogood = ['OSAT', 'PR']  # I don't care about these channels
 
     scalp = ['FP1', 'FP2', 'F3', 'F4', 'F7', 'F8', 'T3', 'T4', 'T5',  'EVT',
              'T6', 'O1', 'O2', 'F3', 'F4', 'C3', 'C4', 'P3', 'P4', 'FZ', 'CZ',
-             'PZ', 'C2', 'EKG', 'A1', 'A2', 'T1', 'T2', 'LOC', 'ROC', 'EMG1',
-             'EMG2',
-             'CII',  # idk
+             'OZ', 'PZ', 'C2', 'EKG', 'A1', 'A2', 'T1', 'T2', 'LOC', 'ROC',
+             'EMG1', 'EMG2',
+             'CII',
              'FO1', 'FO2', 'FO3', 'FO4']  # MG69: idk
 
     trigger = ['TRIG', 'TRIG1', 'TRIG2', 'TGR2', 'TRIG/EMG', 'TRIG 1',
@@ -194,14 +247,12 @@ def check_chan_name(eeg_file, elec_file, dest_dir):
 
     ref = ['REF', 'REF1', 'REF2', 'REF3', 'REF4']
 
-    pos_chan_name = ch.chan_name
-
     n_scalp = 0
     n_trigger = 0
     n_ref = 0
     n_ieeg = 0
     unknown = []
-    for c in d.header['chan_name']:
+    for c in xltek_chan_name:
         if not c.upper() in nogood:  # we just don't care
             if c in pos_chan_name:
                 n_ieeg += 1
@@ -222,7 +273,5 @@ def check_chan_name(eeg_file, elec_file, dest_dir):
                 'IEEG Channels    {3: 3}\n'
                 'rec but no pos {4}\n\n'
                 'pos but no rec {5}'.format(n_scalp, n_trigger, n_ref, n_ieeg,
-                                     ', '.join(unknown),
-                                     ', '.join(pos_chan_name)))
-
-    return report_file
+                                            ', '.join(unknown),
+                                            ', '.join(pos_chan_name)))

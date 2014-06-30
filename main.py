@@ -10,47 +10,51 @@ from phypno.attr import Channels, Freesurfer
 from rcmg.interfaces import make_struct
 from eloc.snap_grid_to_pial import adjust_grid_strip_chan
 from eloc.elec_info import (plot_rotating_brains, make_table_of_regions)
-from eloc.fix_chan_name import fix_chan_name
+from eloc.fix_chan_name import fix_chan_name, check_chan_name
 
 lg = getLogger('eloc')
 lg.setLevel(DEBUG)
 
 recdir = '/home/gio/recordings'
 
-subj_with_correct_names = ['EM09', 'MG37', 'MG63', 'MG72']
 
-
-for subj in listdir(recdir):
+for subj in sorted(listdir(recdir), reverse=True):
 
     lg.info('\n' + subj)
-
     dir_names = make_struct(subj, redo=False)
-    elec_file = join(dir_names['doc_elec'], 'elec_pos.csv')
-    adj_elec_file = join(dir_names['doc_elec'], 'elec_pos_adjusted.csv')
+
+    SESS = 'A'  # loop over sessions
+
+    elec_file = join(dir_names['doc_elec'], subj + '_elec_pos-orig_sess' +
+                     SESS + '.csv')
+    adj_elec_file = join(dir_names['doc_elec'], subj +
+                         '_elec_pos-adjusted_sess' + SESS + '.csv')
+    names_elec_file = join(dir_names['doc_elec'], subj +
+                           '_elec_pos-names_sess' + SESS + '.csv')
 
     try:
         chan = Channels(elec_file)
         anat = Freesurfer(join(dir_names['mri_proc'], 'freesurfer'))
-    except FileNotFoundError:
+    except (FileNotFoundError, OSError) as err:
+        lg.warn(err)
         continue
 
     adjust_grid_strip_chan(chan, anat)
     chan.export(adj_elec_file)
 
-    gif_file = join(dir_names['doc_wiki'], 'elec_pos.gif')
+    gif_file = join(dir_names['doc_wiki'], subj + '_elec_pos-XX_sess' + SESS +
+                    '.gif')
     try:
         plot_rotating_brains(chan, anat, gif_file)
     except FileNotFoundError:
         continue
 
-    wiki_file = join(dir_names['doc_wiki'], 'elec_pos_table.txt')
+    wiki_file = join(dir_names['doc_wiki'], subj + '_elec_pos-wiki_sess' +
+                     SESS + '.txt')
     make_table_of_regions(chan, anat, wiki_file)
 
-    if subj in subj_with_correct_names:
-        fixed_elec_file = fix_chan_name(subj, adj_elec_file)
+    fix_chan_name(subj, adj_elec_file, names_elec_file)
+    chan = Channels(names_elec_file)
 
-"""
-
-    for eeg_file in eeg_files:
-        check_chan_name(eeg_file, fixed_elec_file, dir_names['doc'])
-"""
+    xltek_chan_file = join(dir_names['doc_elec'], 'xltek_elec_names.csv')
+    check_chan_name(chan, xltek_chan_file)

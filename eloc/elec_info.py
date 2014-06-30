@@ -1,5 +1,5 @@
 from numpy import mean, meshgrid, arange, sqrt, zeros, vstack
-from os.path import join, splitext
+from os.path import join
 from subprocess import call
 from tempfile import mkdtemp
 from visvis import gca, record
@@ -69,7 +69,7 @@ def plot_rotating_brains(chan, anat, gif_file):
 
         rec.Export(join(img_dir, 'image.png'))
 
-        hemi_gif = splitext(gif_file)[0] + '_' + hemi + splitext(gif_file)[1]
+        hemi_gif = gif_file.replace('XX', hemi)
         call('convert ' + join(img_dir, 'image*.png') + ' ' + hemi_gif,
              shell=True)
 
