@@ -57,4 +57,7 @@ for subj in sorted(listdir(recdir), reverse=True):
     chan = Channels(names_elec_file)
 
     xltek_chan_file = join(dir_names['doc_elec'], 'xltek_elec_names.csv')
-    check_chan_name(chan, xltek_chan_file)
+    try:
+        check_chan_name(chan, xltek_chan_file)
+    except FileNotFoundError:
+        continue

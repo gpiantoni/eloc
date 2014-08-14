@@ -26,6 +26,30 @@ def fix_chan_name(subj_code, elec_file, fixed_elec_file):
         newname.extend(['FGR{}'.format(x + 1) for x in range(16)])
         # not all
 
+    if subj_code == 'MG21':
+        oldname.extend(['LTP{}'.format(x) for x in [5, 6]])
+        newname.extend(['LPT{}'.format(x) for x in [5, 6]])
+
+    if subj_code == 'MG23':
+        oldname.extend(['RSbFr{}'.format(x + 1) for x in range(8)])
+        newname.extend(['RSF{}'.format(x + 1) for x in range(8)])
+        oldname.extend(['RPFr{}'.format(x + 1) for x in range(8)])
+        newname.extend(['RFR{}'.format(x + 1) for x in range(8)])
+        oldname.extend(['LSbFr{}'.format(x + 1) for x in range(8)])
+        newname.extend(['LSF{}'.format(x + 1) for x in range(8)])
+        oldname.extend(['LPFr{}'.format(x + 1) for x in range(8)])
+        newname.extend(['LFR{}'.format(x + 1) for x in range(8)])
+
+    if subj_code == 'MG25':
+        oldname.extend(['RSbFr{}'.format(x + 1) for x in range(8)])
+        newname.extend(['RSF{}'.format(x + 1) for x in range(8)])
+        oldname.extend(['RFr{}'.format(x + 1) for x in range(8)])
+        newname.extend(['RFR{}'.format(x + 1) for x in range(8)])
+        oldname.extend(['LSbFr{}'.format(x + 1) for x in range(8)])
+        newname.extend(['LSF{}'.format(x + 1) for x in range(8)])
+        oldname.extend(['LFr{}'.format(x + 1) for x in range(8)])
+        newname.extend(['LFR{}'.format(x + 1) for x in range(8)])
+
     if subj_code == 'MG33':
         oldname.extend(['Gr{}'.format(x + 1) for x in range(64)])
         newname.extend(['GR{}'.format(x + 1) for x in range(64)])
@@ -161,13 +185,17 @@ def fix_chan_name(subj_code, elec_file, fixed_elec_file):
         oldname.extend(['SS{}'.format(x) for x in range(1, 9)])
         newname.extend(['SYDS{}'.format(x) for x in range(1, 9)])
 
-    elif subj_code == 'MG68':
+    if subj_code == 'MG68':
         oldname = ['LM{}'.format(x) for x in range(1, 9)]
         newname = ['LMF{}'.format(x) for x in range(1, 9)]
         oldname.extend(['RM{}'.format(x) for x in range(1, 9)])
         newname.extend(['RMF{}'.format(x) for x in range(1, 9)])
         oldname.append('LPT4 ')  # space
         newname.append('LPT4')
+
+    if subj_code == 'MG74':
+        oldname.append('RPF2')
+        newname.extend('ROF2')
 
     for one_oldname, one_newname in zip(oldname, newname):
         for one_chan in chan.chan:
