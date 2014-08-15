@@ -18,7 +18,7 @@ lg.setLevel(DEBUG)
 recdir = '/home/gio/recordings'
 
 
-for subj in sorted(listdir(recdir), reverse=True):
+for subj in sorted(listdir(recdir), reverse=False):
 
     lg.info('\n' + subj)
     dir_names = make_struct(subj, redo=False)
@@ -39,7 +39,10 @@ for subj in sorted(listdir(recdir), reverse=True):
         lg.warn(err)
         continue
 
-    adjust_grid_strip_chan(chan, anat)
+    try:
+        adjust_grid_strip_chan(chan, anat)
+    except ValueError as err:
+        lg.warn(err)
     chan.export(adj_elec_file)
 
     gif_file = join(dir_names['doc_wiki'], subj + '_elec_pos-XX_sess' + SESS +
