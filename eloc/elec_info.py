@@ -1,31 +1,11 @@
-from numpy import mean, meshgrid, arange, sqrt, zeros, vstack
-from os.path import join
-from subprocess import call
-from tempfile import mkdtemp
-from visvis import gca, record
-
-from phypno.attr import Channels
 from phypno.attr.chan import find_chan_in_region, assign_region_to_channels
-from phypno.viz.plot_3d import plot_surf, plot_chan
+from phypno.viz.plot_3d import Viz3
 
 from .snap_grid_to_pial import is_grid
 
 
 N_ANGLES = 72
 HEMI_TOL = 5  # tolerance for electrodes in one or the other hemisphere
-
-
-def _plot_grid_and_depth_elec(hemi_chan):
-
-    grid_strip_chan = hemi_chan(is_grid)
-    neuroport = hemi_chan(lambda x: x.label.lower() == 'neuroport')
-    depth_chan = hemi_chan(lambda x: not is_grid(x))
-
-    fig = plot_chan(neuroport, color=(0, 1, 0, 1))
-    plot_chan(grid_strip_chan, fig, color=(1, 0, 0, 1))
-    plot_chan(depth_chan, fig, color=(0, 0, 1, 1))
-
-    return fig
 
 
 def plot_rotating_brains(chan, anat, gif_file):
@@ -46,32 +26,22 @@ def plot_rotating_brains(chan, anat, gif_file):
     hemi_chan['rh'] = chan(lambda x: x.xyz[0] > -HEMI_TOL)
 
     for hemi, one_hemi_chan in hemi_chan.items():
-        fig = _plot_grid_and_depth_elec(one_hemi_chan)
+
         surf = anat.read_surf(hemi)
-        plot_surf(surf, fig)
 
-        ax = gca()
-        ax.camera.elevation = 10
-        ax.camera.zoom = 0.007
-        ax.camera.loc = tuple(mean(surf.vert, axis=0))
+        fig = Viz3()
+        fig.add_chan(one_hemi_chan(is_grid),
+                     color=(1, 0, 0, 1))
+        fig.add_chan(one_hemi_chan(lambda x: x.label.lower() == 'neuroport'),
+                     color=(0, 1, 0, 1))
+        fig.add_chan(one_hemi_chan(lambda x: not is_grid(x)),
+                     color=(0, 0, 1, 1))
+        # for some weird reasons, surf has to go after channels
+        fig.add_surf(surf)
 
-        rec = record(ax)
-        for i in range(N_ANGLES):
-            ax.camera.azimuth = 360 * i / N_ANGLES
-            if ax.camera.azimuth > 180:
-                ax.camera.azimuth -= 360
-            ax.Draw()
-            fig.DrawNow()
-        rec.Stop()
-        fig.Destroy()
-
-        img_dir = mkdtemp()
-
-        rec.Export(join(img_dir, 'image.png'))
-
-        hemi_gif = gif_file.replace('XX', hemi)
-        call('convert ' + join(img_dir, 'image*.png') + ' ' + hemi_gif,
-             shell=True)
+        fig._ax.camera.elevation = 0
+        fig.rotate(gif_file.replace('XX', hemi))
+        fig._fig.Destroy()
 
 
 def make_table_of_regions(chan, anat, wiki_table):

@@ -189,6 +189,8 @@ def adjust_grid_strip_chan(chan, freesurfer):
     Channels, the full one. That's why we don't need to specify an assignment
     explicitly.
 
+    EM08 has 4 channels called G. They are not grid.
+
     """
     grid_strip_chan = chan(is_grid)
     depth_chan = chan(lambda x: not is_grid(x))
@@ -196,7 +198,7 @@ def adjust_grid_strip_chan(chan, freesurfer):
     lg.info('grid/strip chan: ' + ','.join(grid_strip_chan.return_label()))
     lg.info('depth chan: ' + ','.join(depth_chan.return_label()))
 
-    if grid_strip_chan.n_chan > 0:
+    if grid_strip_chan.n_chan > 4:
 
         grid_xyz = grid_strip_chan.return_xyz()
         grid_in_rh = sum(grid_xyz[:, 0] > 0) > 10
