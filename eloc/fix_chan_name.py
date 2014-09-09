@@ -193,9 +193,15 @@ def fix_chan_name(subj_code, elec_file, fixed_elec_file):
         oldname.append('LPT4 ')  # space
         newname.append('LPT4')
 
+    if subj_code == 'MG73':
+        oldname.append('LFM3')
+        newname.append('LMF3')
+        oldname.append('MRF3')
+        newname.append('RMF3')
+
     if subj_code == 'MG74':
         oldname.append('RPF2')
-        newname.extend('ROF2')
+        newname.append('ROF2')
 
     for one_oldname, one_newname in zip(oldname, newname):
         for one_chan in chan.chan:
