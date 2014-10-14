@@ -246,7 +246,7 @@ def get_mostcommon_chan_name(xltek_elec_name):
     return mode_chan
 
 
-def check_chan_name(chan, xltek_chan_file):
+def check_chan_name(chan, xltek_chan_file, sess):
     """Compare the channel names with the location names.
 
     Parameters
@@ -255,13 +255,15 @@ def check_chan_name(chan, xltek_chan_file):
         names of the channels
     xltek_chan_file : path to str
         return a report of the channels names
+    sess : str
+        session: 'A', 'B', 'C', ...
 
     Notes
     -----
     It writes the report to file.
 
     """
-    report_file = splitext(xltek_chan_file)[0] + '_report.txt'
+    report_file = splitext(xltek_chan_file)[0] + '_sess' + sess + '_report.txt'
 
     pos_chan_name = chan.return_label()
     xltek_chan_name = get_mostcommon_chan_name(xltek_chan_file)

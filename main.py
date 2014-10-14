@@ -23,44 +23,49 @@ for subj in sorted(listdir(recdir), reverse=False):
     lg.info('\n' + subj)
     dir_names = make_struct(subj, redo=False)
 
-    SESS = 'A'  # loop over sessions
+    if subj in ('MG43', 'MG64', 'MG70'):
+        all_sess = ('A', 'B')
+    else:
+        all_sess = ('A', )
 
-    elec_file = join(dir_names['doc_elec'], subj + '_elec_pos-orig_sess' +
-                     SESS + '.csv')
-    adj_elec_file = join(dir_names['doc_elec'], subj +
-                         '_elec_pos-adjusted_sess' + SESS + '.csv')
-    names_elec_file = join(dir_names['doc_elec'], subj +
-                           '_elec_pos-names_sess' + SESS + '.csv')
+    for sess in all_sess:
 
-    try:
-        chan = Channels(elec_file)
-        anat = Freesurfer(join(dir_names['mri_proc'], 'freesurfer'))
-    except (FileNotFoundError, OSError) as err:
-        lg.warn(err)
-        continue
+        elec_file = join(dir_names['doc_elec'], subj + '_elec_pos-orig_sess' +
+                         sess + '.csv')
+        adj_elec_file = join(dir_names['doc_elec'], subj +
+                             '_elec_pos-adjusted_sess' + sess + '.csv')
+        names_elec_file = join(dir_names['doc_elec'], subj +
+                               '_elec_pos-names_sess' + sess + '.csv')
 
-    try:
-        adjust_grid_strip_chan(chan, anat)
-    except ValueError as err:
-        lg.warn(err)
-    chan.export(adj_elec_file)
+        try:
+            chan = Channels(elec_file)
+            anat = Freesurfer(join(dir_names['mri_proc'], 'freesurfer'))
+        except (FileNotFoundError, OSError) as err:
+            lg.warn(err)
+            continue
 
-    gif_file = join(dir_names['doc_wiki'], subj + '_elec_pos-XX_sess' + SESS +
-                    '.gif')
-    try:
-        plot_rotating_brains(chan, anat, gif_file)
-    except FileNotFoundError:
-        continue
+        try:
+            adjust_grid_strip_chan(chan, anat)
+        except ValueError as err:
+            lg.warn(err)
+        chan.export(adj_elec_file)
 
-    wiki_file = join(dir_names['doc_wiki'], subj + '_elec_pos-wiki_sess' +
-                     SESS + '.txt')
-    make_table_of_regions(chan, anat, wiki_file)
+        gif_file = join(dir_names['doc_wiki'], subj + '_elec_pos-XX_sess' +
+                        sess + '.gif')
+        try:
+            plot_rotating_brains(chan, anat, gif_file)
+        except FileNotFoundError:
+            continue
 
-    fix_chan_name(subj, adj_elec_file, names_elec_file)
-    chan = Channels(names_elec_file)
+        wiki_file = join(dir_names['doc_wiki'], subj + '_elec_pos-wiki_sess' +
+                         sess + '.txt')
+        make_table_of_regions(chan, anat, wiki_file)
 
-    xltek_chan_file = join(dir_names['doc_elec'], 'xltek_elec_names.csv')
-    try:
-        check_chan_name(chan, xltek_chan_file)
-    except FileNotFoundError:
-        continue
+        fix_chan_name(subj, adj_elec_file, names_elec_file)
+        chan = Channels(names_elec_file)
+
+        xltek_chan_file = join(dir_names['doc_elec'], 'xltek_elec_names.csv')
+        try:
+            check_chan_name(chan, xltek_chan_file, sess)
+        except FileNotFoundError:
+            continue
