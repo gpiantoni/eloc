@@ -1,3 +1,6 @@
+from os.path import join, exists
+from subprocess import check_call
+
 from phypno.attr.chan import find_chan_in_region, assign_region_to_channels
 from phypno.viz.plot_3d import Viz3
 
@@ -6,6 +9,14 @@ from .snap_grid_to_pial import is_grid
 
 N_ANGLES = 72
 HEMI_TOL = 5  # tolerance for electrodes in one or the other hemisphere
+
+
+def create_morph_maps(proc_dir):
+    if exists(join(proc_dir, 'freesurfer')):
+        cmd = []
+        cmd.append('export SUBJECTS_DIR=' + proc_dir)
+        cmd.append('mne_make_morph_maps --from freesurfer --to fsaverage --redo')
+        check_call('; '.join(cmd), shell=True)
 
 
 def plot_rotating_brains(chan, anat, gif_file):
@@ -19,7 +30,6 @@ def plot_rotating_brains(chan, anat, gif_file):
         anatomy to plot
     gif_file : str
         name of the gif image.
-
     """
     hemi_chan = {}
     hemi_chan['lh'] = chan(lambda x: x.xyz[0] < HEMI_TOL)
@@ -55,9 +65,8 @@ def make_table_of_regions(chan, anat, wiki_table):
         anatomy to plot
     wiki_table : str
         path to write wiki table.
-
     """
-    assign_region_to_channels(chan, anat)
+    assign_region_to_channels(chan, anat, max_approx=3)
     neuroport = chan(lambda x: x.label.lower() == 'neuroport')
     depth_chan = chan(lambda x: not is_grid(x))
 
