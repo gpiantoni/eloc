@@ -66,7 +66,7 @@ def make_table_of_regions(chan, anat, wiki_table):
     wiki_table : str
         path to write wiki table.
     """
-    assign_region_to_channels(chan, anat, max_approx=3)
+    assign_region_to_channels(chan, anat, max_approx=3, exclude_regions=('White', 'WM', 'Unknown'))
     neuroport = chan(lambda x: x.label.lower() == 'neuroport')
     depth_chan = chan(lambda x: not is_grid(x))
 
