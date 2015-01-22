@@ -56,7 +56,7 @@ for subj in sorted(listdir(recdir), reverse=False):
         gif_file = join(dir_names['doc_wiki'], subj + '_elec_pos-XX_sess' +
                         sess + '.gif')
         try:
-            plot_rotating_brains(chan, anat, gif_file)
+            plot_rotating_brains(chan, anat, gif_file)  # phypno at dccc0842a421795c4f8c2b404cd4ae33bc189ef3
         except FileNotFoundError:
             continue
 

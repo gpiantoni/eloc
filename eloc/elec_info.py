@@ -30,6 +30,11 @@ def plot_rotating_brains(chan, anat, gif_file):
         anatomy to plot
     gif_file : str
         name of the gif image.
+
+    Notes
+    -----
+    The code of Viz3 has changed quite a bit, the last running version is:
+    phypno dccc0842a421795c4f8c2b404cd4ae33bc189ef3
     """
     hemi_chan = {}
     hemi_chan['lh'] = chan(lambda x: x.xyz[0] < HEMI_TOL)
