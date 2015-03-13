@@ -48,7 +48,7 @@ for subj in sorted(listdir(recdir), reverse=False):
             continue
 
         try:
-            adjust_grid_strip_chan(chan, anat)
+            adjust_grid_strip_chan(chan, anat, subj)
         except ValueError as err:
             lg.warn(err)
         chan.export(adj_elec_file)
@@ -56,13 +56,13 @@ for subj in sorted(listdir(recdir), reverse=False):
         gif_file = join(dir_names['doc_wiki'], subj + '_elec_pos-XX_sess' +
                         sess + '.gif')
         try:
-            plot_rotating_brains(chan, anat, gif_file)  # phypno at dccc0842a421795c4f8c2b404cd4ae33bc189ef3
+            plot_rotating_brains(chan, anat, gif_file, subj)  # phypno at dccc0842a421795c4f8c2b404cd4ae33bc189ef3
         except FileNotFoundError:
             continue
 
         wiki_file = join(dir_names['doc_wiki'], subj + '_elec_pos-wiki_sess' +
                          sess + '.txt')
-        make_table_of_regions(chan, anat, wiki_file)
+        make_table_of_regions(chan, anat, wiki_file, subj)
 
         fix_chan_name(subj, adj_elec_file, names_elec_file)
         chan = Channels(names_elec_file)

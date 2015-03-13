@@ -4,7 +4,7 @@ from subprocess import check_call
 from phypno.attr.chan import find_chan_in_region, assign_region_to_channels
 from phypno.viz.plot_3d import Viz3
 
-from .snap_grid_to_pial import is_grid
+from .snap_grid_to_pial import is_on_pial
 
 
 N_ANGLES = 72
@@ -19,7 +19,7 @@ def create_morph_maps(proc_dir):
         check_call('; '.join(cmd), shell=True)
 
 
-def plot_rotating_brains(chan, anat, gif_file):
+def plot_rotating_brains(chan, anat, gif_file, subj):
     """Plot the two hemispheres including the electrodes.
 
     Parameters
@@ -30,6 +30,8 @@ def plot_rotating_brains(chan, anat, gif_file):
         anatomy to plot
     gif_file : str
         name of the gif image.
+    subj : str
+        subject code, used to define which channels are on the pial surface
 
     Notes
     -----
@@ -45,11 +47,15 @@ def plot_rotating_brains(chan, anat, gif_file):
         surf = anat.read_surf(hemi)
 
         fig = Viz3()
-        fig.add_chan(one_hemi_chan(is_grid),
+
+        def is_on_pial_for_subj(x): return is_on_pial(subj, x)
+        fig.add_chan(one_hemi_chan(is_on_pial_for_subj),
                      color=(1, 0, 0, 1))
         fig.add_chan(one_hemi_chan(lambda x: x.label.lower() == 'neuroport'),
                      color=(0, 1, 0, 1))
-        fig.add_chan(one_hemi_chan(lambda x: not is_grid(x)),
+
+        def is_not_on_pial_for_subj(x): return not is_on_pial(subj, x)
+        fig.add_chan(one_hemi_chan(is_not_on_pial_for_subj),
                      color=(0, 0, 1, 1))
         # for some weird reasons, surf has to go after channels
         fig.add_surf(surf)
@@ -59,7 +65,7 @@ def plot_rotating_brains(chan, anat, gif_file):
         fig._fig.Destroy()
 
 
-def make_table_of_regions(chan, anat, wiki_table):
+def make_table_of_regions(chan, anat, wiki_table, subj):
     """Write location of the channels as wiki page.
 
     Parameters
@@ -70,16 +76,20 @@ def make_table_of_regions(chan, anat, wiki_table):
         anatomy to plot
     wiki_table : str
         path to write wiki table.
+    subj : str
+        subject code, used to define which channels are on the pial surface
     """
-    assign_region_to_channels(chan, anat, max_approx=3, exclude_regions=('White', 'WM', 'Unknown'))
+    assign_region_to_channels(chan, anat, max_approx=3,
+                              exclude_regions=('White', 'WM', 'Unknown'))
     neuroport = chan(lambda x: x.label.lower() == 'neuroport')
-    depth_chan = chan(lambda x: not is_grid(x))
+
+    def is_not_on_pial_for_subj(x): return not is_on_pial(subj, x)
+    depth_chan = chan(is_not_on_pial_for_subj)
 
     with open(wiki_table, 'w') as f:
 
         if len(neuroport.chan) == 1:
-            f.write('Neuroport in ' + neuroport.chan[0].attr['region']
-                    + '\n')
+            f.write('Neuroport in ' + neuroport.chan[0].attr['region'] + '\n')
 
         f.write('\n^ Regions ^ Electrodes ^\n')
         for region in sorted(set(depth_chan.return_attr('region'))):

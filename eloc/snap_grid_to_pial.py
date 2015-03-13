@@ -22,7 +22,21 @@ HOST = gethostname()
 REMOVE_FILES = True  # keep all the temporary files
 
 
-def is_grid(chan):
+def is_on_pial(subj, chan):
+    """Check if the electrodes are on the pial surface.
+
+    Parameters
+    ----------
+    subj : str
+        subject code, used to define which channels are on the pial surface
+    chan : instance of phypno.attr.chan.Chan
+        one single channel
+
+    Returns
+    -------
+    bool
+        if the channel should be on the pial surface
+    """
     label = chan.label
     G1 = match('.*G[0-9]{1,2}$', label)
     CING1 = match('.*CING[0-9]$', label)
@@ -31,7 +45,17 @@ def is_grid(chan):
     S1 = match('.*S[0-9]$', label.upper())
     ref = match('REF[0-9]$', label.upper())
     neuroport = label in ('neuroport', 'Neuroport')
-    return (G1 and not CING1) or GR1 or RG1 or S1 or ref or neuroport
+
+    extra = False
+    if subj == 'MG33':
+        extra = extra or match('.*TT[0-9]{1}$', label)
+        extra = extra or match('.*SbT[0-9]{1}$', label)
+        extra = extra or match('.*PO[0-9]{1}$', label)
+    if subj == 'MG63':
+        extra = extra or match('.*AST[0-9]{1}$', label)
+        extra = extra or match('.*PST[0-9]{1}$', label)
+
+    return (G1 and not CING1) or GR1 or RG1 or S1 or ref or neuroport or extra
 
 
 def _exec_remote_script(local_script):
@@ -166,7 +190,7 @@ def snap_to_surf(chan, surf_file):
     return chan
 
 
-def adjust_grid_strip_chan(chan, freesurfer):
+def adjust_grid_strip_chan(chan, freesurfer, subj):
     """Adjust only grid and strip channels.
 
     Parameters
@@ -175,6 +199,8 @@ def adjust_grid_strip_chan(chan, freesurfer):
         channels to snap, with or without grid
     freesurfer : instance of phypno.attr.anat.Freesurfer
         freesurfer information
+    subj : str
+        subject code, used to define which channels are on the pial surface
 
     Returns
     -------
@@ -192,8 +218,11 @@ def adjust_grid_strip_chan(chan, freesurfer):
     EM08 has 4 channels called G. They are not grid.
 
     """
-    grid_strip_chan = chan(is_grid)
-    depth_chan = chan(lambda x: not is_grid(x))
+    def is_on_pial_for_subj(x): return is_on_pial(subj, x)
+    grid_strip_chan = chan(is_on_pial_for_subj)
+
+    def is_not_on_pial_for_subj(x): return not is_on_pial(subj, x)
+    depth_chan = chan(is_not_on_pial_for_subj)
 
     lg.info('grid/strip chan: ' + ','.join(grid_strip_chan.return_label()))
     lg.info('depth chan: ' + ','.join(depth_chan.return_label()))
