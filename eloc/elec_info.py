@@ -1,5 +1,6 @@
 from os.path import join, exists
 from subprocess import check_call
+from tempfile import mkdtemp
 
 from phypno.attr.chan import find_chan_in_region, assign_region_to_channels
 from phypno.viz.plot_3d import Viz3
@@ -7,7 +8,7 @@ from phypno.viz.plot_3d import Viz3
 from .snap_grid_to_pial import is_on_pial
 
 
-N_ANGLES = 72
+ROTATE_STEP = 5
 HEMI_TOL = 5  # tolerance for electrodes in one or the other hemisphere
 
 
@@ -58,11 +59,45 @@ def plot_rotating_brains(chan, anat, gif_file, subj):
         fig.add_chan(one_hemi_chan(is_not_on_pial_for_subj),
                      color=(0, 0, 1, 1))
         # for some weird reasons, surf has to go after channels
-        fig.add_surf(surf)
+        SKIN_COLOR = (239 / 255., 208 / 255., 207 / 255., .5)
+        fig.add_surf(surf, color=SKIN_COLOR)
 
-        fig._ax.camera.elevation = 0
-        fig.rotate(gif_file.replace('XX', hemi))
-        fig._fig.Destroy()
+        fig._widget.opts['elevation'] = 0
+        _rotate_brain(fig, gif_file.replace('XX', hemi))
+        fig._widget.hide()
+
+
+def _rotate_brain(fig, gif_file):
+    img_dir = mkdtemp()
+
+    if 'rh' in gif_file:
+        angles = range(180, -180, -ROTATE_STEP)
+    if 'lh' in gif_file:
+        angles = range(-180, 180, ROTATE_STEP)
+    IMAGE = 'image%09d.jpg'
+
+    for i, ang in enumerate(angles):
+        fig._widget.opts['azimuth'] = ang
+
+        fig.save(join(img_dir, IMAGE % i))
+
+    _make_gif(img_dir, gif_file)
+
+
+def _make_gif(img_dir, gif_file):
+    """Save the image as rotating gif.
+    Parameters
+    ----------
+    img_dir : path to dir
+    directory with all the imags
+    gif_file : path to file
+    file where you want to save the gif
+    Notes
+    -----
+    It requires ''convert'' from Imagemagick
+    """
+    check_call('convert ' + join(img_dir, 'image*.jpg') + ' ' + gif_file,
+               shell=True)
 
 
 def make_table_of_regions(chan, anat, wiki_table, subj):
