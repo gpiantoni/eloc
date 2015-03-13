@@ -26,6 +26,15 @@ def fix_chan_name(subj_code, elec_file, fixed_elec_file):
         newname.extend(['FGR{}'.format(x + 1) for x in range(16)])
         # not all
 
+    if subj_code == 'MG17':
+        oldname.extend(['FPS{}'.format(x + 1) for x in range(16)])
+        newname.extend(['FrP{}'.format(x + 1) for x in range(16)])
+        oldname.extend(['SFS{}'.format(x + 1) for x in range(16)])
+        newname.extend(['SbFr{}'.format(x + 1) for x in range(16)])
+        oldname.extend(['STS{}'.format(x + 1) for x in range(16)])
+        newname.extend(['SbTp{}'.format(x + 1) for x in range(16)])
+        # not all
+
     if subj_code == 'MG21':
         oldname.extend(['LTP{}'.format(x) for x in [5, 6]])
         newname.extend(['LPT{}'.format(x) for x in [5, 6]])
