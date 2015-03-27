@@ -45,21 +45,21 @@ def plot_rotating_brains(chan, anat, gif_file, subj):
 
     for hemi, one_hemi_chan in hemi_chan.items():
 
-        surf = anat.read_surf(hemi)
+        surf = getattr(anat.read_brain(), hemi)
 
-        fig = Viz3()
+        fig = Viz3(color='kw')
 
         def is_on_pial_for_subj(x): return is_on_pial(subj, x)
         fig.add_chan(one_hemi_chan(is_on_pial_for_subj),
-                     color=(1, 0, 0, 1))
+                     color=(255, 0, 0, 255))
         fig.add_chan(one_hemi_chan(lambda x: x.label.lower() == 'neuroport'),
-                     color=(0, 1, 0, 1))
+                     color=(0, 255, 0, 255))
 
         def is_not_on_pial_for_subj(x): return not is_on_pial(subj, x)
         fig.add_chan(one_hemi_chan(is_not_on_pial_for_subj),
-                     color=(0, 0, 1, 1))
+                     color=(0, 0, 255, 255))
         # for some weird reasons, surf has to go after channels
-        SKIN_COLOR = (239 / 255., 208 / 255., 207 / 255., .5)
+        SKIN_COLOR = (239, 208, 207, 150)
         fig.add_surf(surf, color=SKIN_COLOR)
 
         fig._widget.opts['elevation'] = 0

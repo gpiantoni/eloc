@@ -42,7 +42,7 @@ def is_on_pial(subj, chan):
     CING1 = match('.*CING[0-9]$', label)
     GR1 = match('.*GR[0-9]{1,2}$', label.upper())
     RG1 = match('.*RG[0-9]{1,2}$', label.upper())  # typo for gr
-    S1 = match('.*S[0-9]$', label.upper())
+    S1 = match('.*S[0-9]$', label.upper()) and not match('.*INS[0-9]$', label.upper())
     ref = match('REF[0-9]$', label.upper())
     neuroport = label in ('neuroport', 'Neuroport')
 
