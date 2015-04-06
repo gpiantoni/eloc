@@ -24,7 +24,7 @@ for subj in sorted(listdir(recdir), reverse=False):
     lg.info('\n' + subj)
     dir_names = make_struct(subj, redo=False)
 
-    if subj in ('MG43', 'MG64', 'MG70'):
+    if subj in ('MG43', 'MG64', 'MG70', 'MG82'):
         all_sess = ('A', 'B')
     else:
         all_sess = ('A', )
