@@ -241,6 +241,6 @@ def adjust_grid_strip_chan(chan, freesurfer, subj):
         else:
             raise ValueError('Not enough electrodes on either side.')
 
-        pial_surf = freesurfer.read_surf(hemi, 'pial')
+        pial_surf = getattr(freesurfer.read_brain('pial'), hemi)
         outer_pial_file = create_outer_surf(pial_surf.surf_file)
         snap_to_surf(grid_strip_chan, outer_pial_file)

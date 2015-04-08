@@ -131,7 +131,7 @@ def make_table_of_regions(chan, anat, wiki_table, subj):
             chan_in_region = find_chan_in_region(depth_chan, anat, region)
             f.write('| {} | {} |\n'.format(region, ', '.join(chan_in_region)))
 
-        f.write('\n^ Electrode ^ Distance ^ Regions ^ \n')
+        f.write('\n^ Electrode ^ Distance ^ Regions ^ Quality (0-good, 4-bad) ^ \n')
         for one_chan in depth_chan.chan:
             f.write('| {0} | {1} | {2} |\n'.format(one_chan.label,
                                                    one_chan.attr['approx'],
