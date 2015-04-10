@@ -48,7 +48,7 @@ for subj in sorted(listdir(recdir), reverse=False):
             continue
 
         try:
-            adjust_grid_strip_chan(chan, anat, subj)
+            chan = adjust_grid_strip_chan(chan, anat, subj)
         except ValueError as err:
             lg.warn(err)
         chan.export(adj_elec_file)
