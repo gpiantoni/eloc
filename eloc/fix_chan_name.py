@@ -120,6 +120,17 @@ def fix_chan_name(subj_code, elec_file, fixed_elec_file):
     if subj_code == 'MG64':
         oldname.extend(['GR{}'.format(x) for x in range(1, 65)])
         newname.extend(['SGR{}'.format(x) for x in range(1, 65)])
+        oldname.extend(['FPgr{}'.format(x) for x in range(1, 17)])
+        newname.extend(['FPG{}'.format(x) for x in range(1, 17)])
+        oldname.extend(['tgr{}'.format(x) for x in range(1, 17)])
+        newname.extend(['IGR{}'.format(x) for x in range(1, 17)])
+        oldname.extend(['SFgr{}'.format(x) for x in range(1, 17)])
+        newname.extend(['SFG{}'.format(x) for x in range(1, 17)])
+        oldname.extend(['AIS{}'.format(x) for x in range(1, 9)])
+        newname.extend(['AIH{}'.format(x) for x in range(1, 9)])
+        oldname.extend(['PIS{}'.format(x) for x in range(1, 9)])
+        newname.extend(['PIH{}'.format(x) for x in range(1, 9)])
+        """
         oldname.extend(['tgr{}'.format(x) for x in range(1, 65)])
         newname.extend(['IGR{}'.format(x) for x in range(1, 65)])
         oldname.extend(['RAT{}'.format(x) for x in range(1, 9)])
@@ -132,10 +143,7 @@ def fix_chan_name(subj_code, elec_file, fixed_elec_file):
         newname.extend(['OFD{}'.format(x) for x in range(1, 9)])
         oldname.extend(['RSF{}'.format(x) for x in range(1, 9)])
         newname.extend(['SFD{}'.format(x) for x in range(1, 9)])
-        oldname.extend(['AIS{}'.format(x) for x in range(1, 9)])
-        newname.extend(['AIH{}'.format(x) for x in range(1, 9)])
-        oldname.extend(['PIS{}'.format(x) for x in range(1, 9)])
-        newname.extend(['PIH{}'.format(x) for x in range(1, 9)])
+        """
 
     if subj_code == 'MG65':
         newname.extend(['ASTS{}'.format(x) for x in range(1, 9)])

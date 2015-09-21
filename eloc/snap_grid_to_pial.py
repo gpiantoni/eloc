@@ -36,6 +36,7 @@ def is_on_pial(subj, chan):
     S1 = match('.*S[0-9]$', label.upper()) and not match('.*INS[0-9]$', label.upper())
     ref = match('REF[0-9]$', label.upper())
     neuroport = label in ('neuroport', 'Neuroport')
+    microgrid = match('.*micro$', label.upper())
 
     extra = False
     if subj == 'MG33':
@@ -46,7 +47,14 @@ def is_on_pial(subj, chan):
         extra = extra or match('.*AST[0-9]{1}$', label)
         extra = extra or match('.*PST[0-9]{1}$', label)
 
-    return (G1 and not CING1) or GR1 or RG1 or S1 or ref or neuroport or extra
+    is_on_pial = ((G1 and not CING1) or GR1 or RG1 or S1 or ref or
+                  neuroport or microgrid or extra)
+
+    is_not_on_pial = True
+    if subj == 'MG91':
+        is_not_on_pial = not match('.*L[AP]TS[0-9]{1}$', label)
+
+    return is_on_pial and is_not_on_pial
 
 
 def adjust_grid_strip_chan(chan, freesurfer, subj):

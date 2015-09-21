@@ -1,4 +1,6 @@
-from logging import getLogger, DEBUG, INFO
+# %gui qt
+
+from logging import getLogger, DEBUG
 from os import listdir
 from os.path import join
 from sys import path

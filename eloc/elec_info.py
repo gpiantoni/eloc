@@ -33,11 +33,6 @@ def plot_rotating_brains(chan, anat, gif_file, subj):
         name of the gif image.
     subj : str
         subject code, used to define which channels are on the pial surface
-
-    Notes
-    -----
-    The code of Viz3 has changed quite a bit, the last running version is:
-    phypno dccc0842a421795c4f8c2b404cd4ae33bc189ef3
     """
     hemi_chan = {}
     hemi_chan['lh'] = chan(lambda x: x.xyz[0] < HEMI_TOL)
@@ -47,24 +42,24 @@ def plot_rotating_brains(chan, anat, gif_file, subj):
 
         surf = getattr(anat.read_brain(), hemi)
 
-        fig = Viz3(color='kw')
+        fig = Viz3()
 
         def is_on_pial_for_subj(x): return is_on_pial(subj, x)
         fig.add_chan(one_hemi_chan(is_on_pial_for_subj),
-                     color=(255, 0, 0, 255))
+                     color=(1, 0, 0, 1))
         fig.add_chan(one_hemi_chan(lambda x: x.label.lower() == 'neuroport'),
-                     color=(0, 255, 0, 255))
+                     color=(0, 1, 0, 1))
 
         def is_not_on_pial_for_subj(x): return not is_on_pial(subj, x)
         fig.add_chan(one_hemi_chan(is_not_on_pial_for_subj),
-                     color=(0, 0, 255, 255))
+                     color=(0, 0, 1, 1))
         # for some weird reasons, surf has to go after channels
-        SKIN_COLOR = (239, 208, 207, 150)
+        SKIN_COLOR = (.94, .82, .81, .5)
         fig.add_surf(surf, color=SKIN_COLOR)
 
-        fig._widget.opts['elevation'] = 0
+        fig._plt.view.camera.elevation = 0
         _rotate_brain(fig, gif_file.replace('XX', hemi))
-        fig._widget.hide()
+        # fig._widget.hide()
 
 
 def _rotate_brain(fig, gif_file):
@@ -77,7 +72,7 @@ def _rotate_brain(fig, gif_file):
     IMAGE = 'image%09d.jpg'
 
     for i, ang in enumerate(angles):
-        fig._widget.opts['azimuth'] = ang
+        fig._plt.view.camera.azimuth = ang
 
         fig.save(join(img_dir, IMAGE % i))
 
