@@ -24,7 +24,14 @@ def fix_chan_name(subj_code, elec_file, fixed_elec_file):
     if subj_code == 'EM09':
         oldname.extend(['fgr{}'.format(x + 1) for x in range(16)])
         newname.extend(['FGR{}'.format(x + 1) for x in range(16)])
-        # not all
+        oldname.extend(['ROF{}'.format(x + 1) for x in range(8)])
+        newname.extend(['OFD{}'.format(x + 1) for x in range(8)])
+        oldname.extend(['RDF{}'.format(x + 1) for x in range(8)])
+        newname.extend(['DFD{}'.format(x + 1) for x in range(8)])
+        oldname.extend(['RPF{}'.format(x + 1) for x in range(8)])
+        newname.extend(['PFD{}'.format(x + 1) for x in range(8)])
+        oldname.extend(['RPT{}'.format(x + 1) for x in range(8)])
+        newname.extend(['PTD{}'.format(x + 1) for x in range(8)])
 
     if subj_code == 'MG17':
         oldname.extend(['FPS{}'.format(x + 1) for x in range(16)])
@@ -80,11 +87,6 @@ def fix_chan_name(subj_code, elec_file, fixed_elec_file):
         newname.extend(['PGR{}'.format(x + 1) for x in range(32)])
         # not all
 
-    if subj_code == 'MG72':
-        oldname.extend(['stGR{}'.format(x) for x in range(1, 17)])
-        newname.extend(['FGR{}'.format(x) for x in range(1, 17)])
-        # not all
-
     if subj_code == 'MG59':
         oldname.extend(['RPT{}'.format(x) for x in range(1, 65)])
         newname.extend(['RTP{}'.format(x) for x in range(1, 65)])
@@ -118,6 +120,7 @@ def fix_chan_name(subj_code, elec_file, fixed_elec_file):
         # no location for PTD
 
     if subj_code == 'MG64':
+        # this is based on sess B only
         oldname.extend(['GR{}'.format(x) for x in range(1, 65)])
         newname.extend(['SGR{}'.format(x) for x in range(1, 65)])
         oldname.extend(['FPgr{}'.format(x) for x in range(1, 17)])
@@ -130,20 +133,20 @@ def fix_chan_name(subj_code, elec_file, fixed_elec_file):
         newname.extend(['AIH{}'.format(x) for x in range(1, 9)])
         oldname.extend(['PIS{}'.format(x) for x in range(1, 9)])
         newname.extend(['PIH{}'.format(x) for x in range(1, 9)])
-        """
-        oldname.extend(['tgr{}'.format(x) for x in range(1, 65)])
-        newname.extend(['IGR{}'.format(x) for x in range(1, 65)])
-        oldname.extend(['RAT{}'.format(x) for x in range(1, 9)])
-        newname.extend(['ATD{}'.format(x) for x in range(1, 9)])
-        oldname.extend(['RPT{}'.format(x) for x in range(1, 9)])
-        newname.extend(['PTD{}'.format(x) for x in range(1, 9)])
-        oldname.extend(['RDF{}'.format(x) for x in range(1, 9)])
-        newname.extend(['DFD{}'.format(x) for x in range(1, 9)])
-        oldname.extend(['ROF{}'.format(x) for x in range(1, 9)])
-        newname.extend(['OFD{}'.format(x) for x in range(1, 9)])
-        oldname.extend(['RSF{}'.format(x) for x in range(1, 9)])
-        newname.extend(['SFD{}'.format(x) for x in range(1, 9)])
-        """
+        oldname.extend(['OFS{}'.format(x + 1) for x in range(8)])
+        newname.extend(['FPS{}'.format(x + 1) for x in range(8)])
+        oldname.extend(['STS{}'.format(x + 1) for x in range(8)])
+        newname.extend(['ASTS{}'.format(x + 1) for x in range(8)])
+        oldname.extend(['RSF{}'.format(x + 1) for x in range(8)])
+        newname.extend(['SFD{}'.format(x + 1) for x in range(8)])
+        oldname.extend(['ROF{}'.format(x + 1) for x in range(8)])
+        newname.extend(['OFD{}'.format(x + 1) for x in range(8)])
+        oldname.extend(['RDF{}'.format(x + 1) for x in range(8)])
+        newname.extend(['DFD{}'.format(x + 1) for x in range(8)])
+        oldname.extend(['RPT{}'.format(x + 1) for x in range(8)])
+        newname.extend(['PTD{}'.format(x + 1) for x in range(8)])
+        oldname.extend(['RI{}'.format(x + 1) for x in range(8)])
+        newname.extend(['ID{}'.format(x + 1) for x in range(8)])
 
     if subj_code == 'MG65':
         newname.extend(['ASTS{}'.format(x) for x in range(1, 9)])
@@ -209,6 +212,11 @@ def fix_chan_name(subj_code, elec_file, fixed_elec_file):
         newname.extend(['RMF{}'.format(x) for x in range(1, 9)])
         oldname.append('LPT4 ')  # space
         newname.append('LPT4')
+
+    if subj_code == 'MG72':
+        oldname.extend(['stGR{}'.format(x) for x in range(1, 17)])
+        newname.extend(['FGR{}'.format(x) for x in range(1, 17)])
+        # not all
 
     if subj_code == 'MG73':
         oldname.append('LFM3')
