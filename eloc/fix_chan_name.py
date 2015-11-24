@@ -262,7 +262,7 @@ def fix_chan_name(subj_code, elec_file, fixed_elec_file):
     chan.export(fixed_elec_file)
 
 
-def get_mostcommon_chan_name(xltek_elec_name):
+def get_mostcommon_chan_name(xltek_elec_name, sess=None):
     """Get the most common channels across xltek datasets.
 
     Parameters
@@ -286,7 +286,8 @@ def get_mostcommon_chan_name(xltek_elec_name):
         csvinfo = reader(f)
         all_chan = []
         for row in csvinfo:
-            all_chan.append([chan.strip() for chan in row[1:]])
+            if sess is None or '_sess' + sess in row[0]:
+                all_chan.append([chan.strip() for chan in row[1:]])
 
     mode_chan = []
     for same_chan in zip_longest(*all_chan):
@@ -317,7 +318,7 @@ def check_chan_name(chan, xltek_chan_file, sess):
     report_file = splitext(xltek_chan_file)[0] + '_sess' + sess + '_report.txt'
 
     pos_chan_name = chan.return_label()
-    xltek_chan_name = get_mostcommon_chan_name(xltek_chan_file)
+    xltek_chan_name = get_mostcommon_chan_name(xltek_chan_file, sess)
 
     # everything stays upper-case
     nogood = ['OSAT', 'PR']  # I don't care about these channels
