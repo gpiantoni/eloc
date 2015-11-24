@@ -1,4 +1,4 @@
-# %gui qt
+# %gui qt4
 
 from logging import getLogger, DEBUG
 from os import listdir
