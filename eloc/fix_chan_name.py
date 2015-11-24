@@ -228,6 +228,32 @@ def fix_chan_name(subj_code, elec_file, fixed_elec_file):
         oldname.append('RPF2')
         newname.append('ROF2')
 
+    if subj_code == 'MG91':
+        oldname.extend(['LAT{}'.format(x + 1) for x in range(8)])
+        newname.extend(['ATD{}'.format(x + 1) for x in range(8)])
+        oldname.extend(['LMT{}'.format(x + 1) for x in range(8)])
+        newname.extend(['MTD{}'.format(x + 1) for x in range(8)])
+        oldname.extend(['LPT{}'.format(x + 1) for x in range(8)])
+        newname.extend(['PTD{}'.format(x + 1) for x in range(8)])
+        oldname.extend(['LAO{}'.format(x + 1) for x in range(8)])
+        newname.extend(['AOD{}'.format(x + 1) for x in range(8)])
+        oldname.extend(['LMO{}'.format(x + 1) for x in range(8)])
+        newname.extend(['MOD{}'.format(x + 1) for x in range(8)])
+        oldname.extend(['LPO{}'.format(x + 1) for x in range(8)])
+        newname.extend(['POD{}'.format(x + 1) for x in range(8)])
+        oldname.extend(['LAF{}'.format(x + 1) for x in range(8)])
+        newname.extend(['AFD{}'.format(x + 1) for x in range(8)])
+        oldname.extend(['LMF{}'.format(x + 1) for x in range(8)])
+        newname.extend(['MFD{}'.format(x + 1) for x in range(8)])
+        oldname.extend(['LPF{}'.format(x + 1) for x in range(8)])
+        newname.extend(['PFD{}'.format(x + 1) for x in range(8)])
+        oldname.extend(['LOF{}'.format(x + 1) for x in range(8)])
+        newname.extend(['OFD{}'.format(x + 1) for x in range(8)])
+        oldname.extend(['LATS{}'.format(x + 1) for x in range(4)])
+        newname.extend(['ATS{}'.format(x + 1) for x in range(4)])
+        oldname.extend(['LPTS{}'.format(x + 1) for x in range(4)])
+        newname.extend(['PTS{}'.format(x + 1) for x in range(4)])
+
     for one_oldname, one_newname in zip(oldname, newname):
         for one_chan in chan.chan:
             if one_chan.label == one_oldname:
